@@ -16,6 +16,15 @@ class ResourceCalendar(models.Model):
     @api.constrains("active")
     def _check_active(self):
         for item in self:
+            self.env["hr.employee.calendar"].search(
+                [
+                    ("calendar_id", "=", item.id),
+                    "|",
+                    ("date_end", "=", False),
+                    ("date_end", "<=", fields.Date.today()),
+                ]
+            ).unlink()
+            self.env.cr.commit()
             total_items = self.env["hr.employee.calendar"].search_count(
                 [
                     ("calendar_id", "=", item.id),
